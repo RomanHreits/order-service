@@ -1,0 +1,76 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.polarbookshop'
+version = '0.0.1-SNAPSHOT'
+def springCloudVersion = "2025.0.0"
+def testContainersVersion = "1.21.1"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
+    // Flyway
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.springframework:spring-jdbc'
+
+    // Dependency to generate metadata for Spring Boot configuration properties
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:r2dbc'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+bootBuildImage {
+    doFirst {
+        System.setProperty("DOCKER_API_VERSION", "1.44")
+    }
+    imageName = "${project.name}"
+    environment = [
+        'BP_JVM_VERSION': '21'
+    ]
+
+    docker {
+        host = "unix:///home/user/.docker/desktop/docker.sock"
+
+        publishRegistry {
+            url = project.findProperty("registryUrl")
+            username = project.findProperty("registryUsername")
+            password = project.findProperty("registryPassword")
+        }
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "org.testcontainers:testcontainers-bom:${testContainersVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

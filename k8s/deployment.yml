@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+spec:
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: order-service
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 5"] # wait for 5 seconds before stopping the container
+          ports:
+            - containerPort: 9002
+              name: http
+          env:
+            - name: BPL_JVM_THREAD_COUNT
+              value: "50" # buildpack var to configure the number of threads in the JVM
+            - name: SPRING_FLYWAY_URL
+              value: jdbc:postgresql://polar-postgres:5432/polardb_order
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: http://config-service:8888 # URL of the config server with DNS name as the service name
+            - name: SPRING_R2DBC_URL
+              value: r2dbc:postgresql://polar-postgres:5432/polardb_order
+            - name: POLAR_CATALOG_SERVICE_URI
+              value: http://catalog-service:8082 # URL of the catalog service with DNS name as the service name
+
+
