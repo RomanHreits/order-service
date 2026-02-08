@@ -1,7 +1,7 @@
 plugins {
-    id 'java'
     id 'org.springframework.boot' version '3.5.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
 }
 
 group = 'com.polarbookshop'
@@ -9,9 +9,11 @@ version = '0.0.1-SNAPSHOT'
 def springCloudVersion = "2025.0.0"
 def testContainersVersion = "1.21.1"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+description = 'Provides functionality for purchasing books.'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
@@ -45,16 +47,16 @@ dependencies {
 }
 
 bootBuildImage {
-    doFirst {
-        System.setProperty("DOCKER_API_VERSION", "1.44")
-    }
+//    doFirst {
+//        System.setProperty("DOCKER_API_VERSION", "1.44")
+//    }
     imageName = "${project.name}"
     environment = [
         'BP_JVM_VERSION': '21'
     ]
 
     docker {
-        host = "unix:///home/user/.docker/desktop/docker.sock"
+//        host = "unix:///home/user/.docker/desktop/docker.sock"
 
         publishRegistry {
             url = project.findProperty("registryUrl")
