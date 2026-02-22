@@ -1,12 +1,12 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.1'
+    id 'org.springframework.boot' version '4.0.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
 }
 
 group = 'com.polarbookshop'
 version = '0.0.1-SNAPSHOT'
-def springCloudVersion = "2025.0.0"
+def springCloudVersion = "2025.1.0"
 def testContainersVersion = "1.21.1"
 
 description = 'Provides functionality for purchasing books.'
@@ -26,6 +26,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-stream-binder-rabbit'
+//    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
 
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
     // Flyway
@@ -37,6 +40,8 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-r2dbc-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.testcontainers:junit-jupiter'
@@ -44,6 +49,8 @@ dependencies {
     testImplementation 'org.testcontainers:r2dbc'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "org.springframework.cloud:spring-cloud-stream-test-binder"
+    testImplementation 'org.testcontainers:rabbitmq'
 }
 
 bootBuildImage {
@@ -58,10 +65,19 @@ bootBuildImage {
     docker {
 //        host = "unix:///home/user/.docker/desktop/docker.sock"
 
+        /*
+            * The publishRegistry configuration is used to specify the credentials and URL for the Docker registry where
+            * the built image will be published. It could be applied with next command:
+            * ./gradlew bootBuildImage --imageName=your-image-name
+            *   --publishImage
+            *   -PregistryUsername=your-username
+            *   -PregistryToken=your-token
+            *   -PregistryUrl=your-registry-url
+         */
         publishRegistry {
             url = project.findProperty("registryUrl")
             username = project.findProperty("registryUsername")
-            password = project.findProperty("registryPassword")
+            password = project.findProperty("registryToken")
         }
     }
 }
